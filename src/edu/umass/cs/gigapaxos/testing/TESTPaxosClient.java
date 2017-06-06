@@ -406,7 +406,7 @@ public class TESTPaxosClient {
 		}
 		return false;
 	}
-
+	
 	protected boolean sendRequest(int id, RequestPacket req)
 			throws IOException, JSONException {
 		InetAddress address = nc.getNodeAddress(id);
