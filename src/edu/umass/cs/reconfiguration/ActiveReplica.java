@@ -441,6 +441,9 @@ public class ActiveReplica<NodeIDType> implements ReconfiguratorCallback,
 								incoming.getSummary(log.isLoggable(Level.FINE)) });
 				// long startTime = System.currentTimeMillis();
 				Request request = incoming;
+				
+				System.out.println("incoming request size "+incoming.toString().length());
+				
 				boolean isCoordinatedRequest = isCoordinated(request);
 
 				SenderAndRequest senderAndRequest = new SenderAndRequest(
