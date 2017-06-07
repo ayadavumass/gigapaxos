@@ -1073,10 +1073,10 @@ public class ActiveReplica<NodeIDType> implements ReconfiguratorCallback,
 			integers.add(type.getInt());
 		return integers;
 	}
-
+	
 	private static enum Instrument {
 		updateDemandStats(Integer.MAX_VALUE), restringification(100), getRequest(
-				100), local(100), replicable(100), getStats(1), handleIncoming(
+				100), local(1), replicable(1), getStats(1), handleIncoming(
 				100), reply(100);
 
 		private final int val;
@@ -1085,7 +1085,7 @@ public class ActiveReplica<NodeIDType> implements ReconfiguratorCallback,
 			this.val = val;
 		}
 	}
-
+	
 	private static final boolean ENABLE_INSTRUMENTATION = Config
 			.getGlobalBoolean(RC.ENABLE_INSTRUMENTATION);
 	private static final long MIN_INTER_DUMP_TIME = 2000;
