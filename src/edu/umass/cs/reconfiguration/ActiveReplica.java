@@ -359,7 +359,7 @@ public class ActiveReplica<NodeIDType> implements ReconfiguratorCallback,
 		if(Config.getGlobalBoolean(RC.ENABLE_INSTRUMENTATION))
 		{
 			if(isCoordinated)
-			{	
+			{
 				ThroughputProfiler.recordOutgoingEvent("coordReqRate");
 			}
 		}

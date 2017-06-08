@@ -26,6 +26,7 @@ import java.util.Set;
 
 import edu.umass.cs.gigapaxos.interfaces.Request;
 import edu.umass.cs.reconfiguration.interfaces.ReconfigurableAppInfo;
+import edu.umass.cs.utils.Util;
 
 /**
  * @author V. Arun
@@ -53,7 +54,7 @@ public class AggregateDemandProfiler {
 	public AggregateDemandProfiler() {
 		this.nodeConfig = null;
 	}
-
+	
 	/**
 	 * @param request
 	 * @param sender
@@ -67,9 +68,14 @@ public class AggregateDemandProfiler {
 			demand = AbstractDemandProfile.createDemandProfile(name); // reflection
 		boolean shouldReport = demand.shouldReportDemandStats(request, sender, nodeConfig);
 		this.map.put(name, demand);
+		
+		if(Util.oneIn(100))
+		{
+			System.out.println("Aggregate demand profiler size "+this.map.size());
+		}
 		return shouldReport;
 	}
-
+	
 	private synchronized AbstractDemandProfile getDemandProfile(String name) {
 		AbstractDemandProfile demand = this.map.get(name);
 		return demand;

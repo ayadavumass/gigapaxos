@@ -37,28 +37,34 @@ public class ThroughputProfiler
 	
 	public static void recordIncomingEvent(String tag)
 	{
-		Long val = incomingRateMap.get(tag);
-		if(val == null)
+		synchronized(incomingRateMap)
 		{
-			incomingRateMap.put(tag, (long)1);
-		}
-		else
-		{
-			incomingRateMap.put(tag, val+1);
+			Long val = incomingRateMap.get(tag);
+			if(val == null)
+			{
+				incomingRateMap.put(tag, (long)1);
+			}
+			else
+			{
+				incomingRateMap.put(tag, val+1);
+			}
 		}
 	}
 	
 	
 	public static void recordOutgoingEvent(String tag)
 	{
-		Long val = outgoingRateMap.get(tag);
-		if(val == null)
+		synchronized(outgoingRateMap)
 		{
-			outgoingRateMap.put(tag, (long)1);
-		}
-		else
-		{
-			outgoingRateMap.put(tag, val+1);
+			Long val = outgoingRateMap.get(tag);
+			if(val == null)
+			{
+				outgoingRateMap.put(tag, (long)1);
+			}
+			else
+			{
+				outgoingRateMap.put(tag, val+1);
+			}
 		}
 	}
 	
