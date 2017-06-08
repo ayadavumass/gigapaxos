@@ -69,10 +69,6 @@ public class AggregateDemandProfiler {
 		boolean shouldReport = demand.shouldReportDemandStats(request, sender, nodeConfig);
 		this.map.put(name, demand);
 		
-		if(Util.oneIn(100))
-		{
-			System.out.println("Aggregate demand profiler size "+this.map.size());
-		}
 		return shouldReport;
 	}
 	
