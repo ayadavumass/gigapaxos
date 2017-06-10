@@ -374,7 +374,7 @@ public class TESTPaxosClient {
 	private boolean sendRequest(RequestPacket req) throws IOException,
 			JSONException {
 		int[] group = TESTPaxosConfig.getGroup(req.getPaxosID());
-		System.out.println(" group "+group);
+		System.out.println(" group "+group[0]);
 		int index = !PIN_CLIENT ? (int) (req.requestID % group.length)
 				: (int) ((myID + 0) % group.length);
 		assert (!(index < 0 || index >= group.length || TESTPaxosConfig
