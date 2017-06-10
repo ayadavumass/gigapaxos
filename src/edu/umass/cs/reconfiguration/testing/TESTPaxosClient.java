@@ -374,6 +374,7 @@ public class TESTPaxosClient {
 	private boolean sendRequest(RequestPacket req) throws IOException,
 			JSONException {
 		int[] group = TESTPaxosConfig.getGroup(req.getPaxosID());
+		System.out.println(" group "+group);
 		int index = !PIN_CLIENT ? (int) (req.requestID % group.length)
 				: (int) ((myID + 0) % group.length);
 		assert (!(index < 0 || index >= group.length || TESTPaxosConfig
@@ -953,10 +954,10 @@ public class TESTPaxosClient {
 			Config.register(args);
 			initStaticParams();
 			TESTPaxosConfig.setConsoleHandler(Level.WARNING);
-
+			
 			TESTPaxosClient[] clients = TESTPaxosClient
 					.setupClients(TESTPaxosConfig.getFromPaxosConfig(true));
-			System.out.println(TESTPaxosConfig.getFromPaxosConfig(true));
+			System.out.println("NodeConfig "+TESTPaxosConfig.getFromPaxosConfig(true));
 			int numReqs = Config.getGlobalInt(TC.NUM_REQUESTS);
 
 			// begin warmup run
