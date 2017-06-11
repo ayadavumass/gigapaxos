@@ -996,7 +996,6 @@ public class PaxosManager<NodeIDType> {
 			}
 			return false;
 		}
-
 	}
 
 	private static final boolean BATCHING_ENABLED = Config
@@ -2007,14 +2006,17 @@ public class PaxosManager<NodeIDType> {
 	private void sendOrLoopback(MessagingTask mtask) throws JSONException,
 			IOException {
 		MessagingTask local = MessagingTask.getLoopback(mtask, myID);
-		if (local != null && !local.isEmptyMessaging())
+		/*if (local != null && !local.isEmptyMessaging())
 			for (PaxosPacket pp : local.msgs)
 				if (pp.getType() == PaxosPacketType.BATCHED_PAXOS_PACKET)
 					for (PaxosPacket packet : ((BatchedPaxosPacket) pp)
 							.getPaxosPackets())
 						this.handlePaxosPacket((packet));
 				else
-					this.handlePaxosPacket((pp));
+					this.handlePaxosPacket((pp));*/
+		if (local != null && !local.isEmptyMessaging())
+			this.messenger.send(local);
+		
 		this.messenger.send(MessagingTask.getNonLoopback(mtask, myID));
 	}
 
