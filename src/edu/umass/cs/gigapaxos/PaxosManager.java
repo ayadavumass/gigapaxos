@@ -29,6 +29,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -145,6 +146,8 @@ public class PaxosManager<NodeIDType> {
 	private final Outstanding outstanding = new Outstanding();
 	private final LargeCheckpointer largeCheckpointer;
 	private PendingDigests pendingDigests;
+	
+	private ScheduledExecutorService loopbackThreadPool;
 
 	private static final boolean USE_GC_MAP = Config
 			.getGlobalBoolean(PC.USE_GC_MAP);
@@ -367,6 +370,20 @@ public class PaxosManager<NodeIDType> {
 						return thread;
 					}
 				});
+		
+		loopbackThreadPool = Executors.newScheduledThreadPool(Config.getGlobalInt(PC.PACKET_DEMULTIPLEXER_THREADS),
+				new ThreadFactory() {
+			@Override
+			public Thread newThread(Runnable r) {
+				Thread thread = Executors.defaultThreadFactory()
+						.newThread(r);
+				thread.setName(PaxosManager.class.getSimpleName()
+						+ myID+"loopbackThreadPool");
+				return thread;
+			}
+		});
+		
+		
 		this.unstringer = unstringer;
 		this.largeCheckpointer = new LargeCheckpointer(paxosLogFolder,
 				this.myID + "");
@@ -2006,16 +2023,37 @@ public class PaxosManager<NodeIDType> {
 	private void sendOrLoopback(MessagingTask mtask) throws JSONException,
 			IOException {
 		MessagingTask local = MessagingTask.getLoopback(mtask, myID);
-		/*if (local != null && !local.isEmptyMessaging())
+		if (local != null && !local.isEmptyMessaging())
+		{
 			for (PaxosPacket pp : local.msgs)
+			{
 				if (pp.getType() == PaxosPacketType.BATCHED_PAXOS_PACKET)
+				{
+					if(Util.oneIn(1000))
+					{
+						System.out.println("Local batching size "+((BatchedPaxosPacket) pp).getPaxosPackets().size());
+					}
+					
 					for (PaxosPacket packet : ((BatchedPaxosPacket) pp)
 							.getPaxosPackets())
-						this.handlePaxosPacket((packet));
+					{
+						this.loopbackThreadPool.execute(new Runnable() 
+										{ public void run() { handlePaxosPacket((packet)); }
+										});
+						//this.handlePaxosPacket((packet));
+					}
+				}
 				else
-					this.handlePaxosPacket((pp));*/
-		if (local != null && !local.isEmptyMessaging())
-			this.messenger.send(local);
+				{
+					//this.handlePaxosPacket((pp));
+					this.loopbackThreadPool.execute(new Runnable() { 
+						public void run() { handlePaxosPacket((pp)); }
+						});
+				}
+			}
+		}
+//		if (local != null && !local.isEmptyMessaging())
+//			this.messenger.send(local);
 		
 		this.messenger.send(MessagingTask.getNonLoopback(mtask, myID));
 	}
