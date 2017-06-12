@@ -430,6 +430,8 @@ public class PaxosInstanceStateMachine implements Keyable<String>, Pausable {
 								: msgType,
 						mode != SyncMode.DEFAULT_SYNC ? mode : "",
 						pp!=null && log.isLoggable(level)? pp.hashCode()+"":"" });
+		
+		
 
 		if (pp != null && pp.getVersion() != this.getVersion()) {
 			log.log(Level.INFO,
@@ -482,6 +484,15 @@ public class PaxosInstanceStateMachine implements Keyable<String>, Pausable {
 
 		MessagingTask mtask = null;
 		MessagingTask[] batchedTasks = null;
+		
+		System.out.println("\nPaxos Stack trace starting");
+		StackTraceElement[] stackTraces = Thread.currentThread().getStackTrace();
+		for(int i=0; i<stackTraces.length; i++)
+		{
+			System.out.println("i="+i+" : "+stackTraces[i].toString());
+		}
+		System.out.println("Paxos Stack trace finished\n");
+		
 
 		switch (msgType) {
 		case REQUEST:
