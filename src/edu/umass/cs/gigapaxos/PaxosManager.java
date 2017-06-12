@@ -29,7 +29,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -1173,8 +1172,14 @@ public class PaxosManager<NodeIDType> {
 
 	// used (only) by RequestBatcher for already batched RequestPackets
 	protected void proposeBatched(RequestPacket requestPacket) {
+		//if (requestPacket != null)
+		//	this.handlePaxosPacket(requestPacket);
 		if (requestPacket != null)
-			this.handlePaxosPacket(requestPacket);
+		{
+			this.loopbackThreadPool.execute(new Runnable() 
+			{ public void run() { handlePaxosPacket((requestPacket)); }
+			});
+		}
 	}
 
 	/**
