@@ -1112,7 +1112,13 @@ public class PaxosManager<NodeIDType> {
 					if(msgType.equals(PaxosPacket.PaxosPacketType.DECISION))
 					{
 						this.decisionThreadPool.execute(new Runnable() 
-								{ public void run() { handlePaxosPacket((request)); }
+								{ public void run() { try {
+									pism.handlePaxosMessage((request));
+								} catch (JSONException je) {
+									PaxosConfig.log.severe(myID + " received bad JSON message: "
+											+ request);
+									je.printStackTrace();
+								} }
 								});
 					}
 					else
