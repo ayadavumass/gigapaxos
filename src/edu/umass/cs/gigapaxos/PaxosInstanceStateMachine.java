@@ -485,15 +485,7 @@ public class PaxosInstanceStateMachine implements Keyable<String>, Pausable {
 		MessagingTask mtask = null;
 		MessagingTask[] batchedTasks = null;
 		
-		System.out.println("\nPaxos Stack trace starting. Thread name "
-					+Thread.currentThread().getName()+" paxos packet type "+msgType.getLabel());
-		StackTraceElement[] stackTraces = Thread.currentThread().getStackTrace();
-		for(int i=0; i<stackTraces.length; i++)
-		{
-			System.out.println("i="+i+" : "+stackTraces[i].toString());
-		}
-		System.out.println("Paxos Stack trace finished\n");
-		
+		PaxosManager.printStackTrace("PaxosInstance "+msgType.getLabel());
 
 		switch (msgType) {
 		case REQUEST:
