@@ -1127,14 +1127,14 @@ public class PaxosManager<NodeIDType> {
 	
 	public static void printStackTrace(String stkTraceName)
 	{
-		System.out.println("\n"+stkTraceName+" stack trace starting. Thread name "
+		/*System.out.println("\n"+stkTraceName+" stack trace starting. Thread name "
 				+Thread.currentThread().getName());
 		StackTraceElement[] stackTraces = Thread.currentThread().getStackTrace();
 		for(int i=0; i<stackTraces.length; i++)
 		{
 			System.out.println("i="+i+" : "+stackTraces[i].toString());
 		}
-		System.out.println(stkTraceName+" stack trace finished\n");
+		System.out.println(stkTraceName+" stack trace finished\n");*/
 	}
 	
 	
