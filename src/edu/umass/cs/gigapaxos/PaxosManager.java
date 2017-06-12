@@ -146,7 +146,7 @@ public class PaxosManager<NodeIDType> {
 	private final LargeCheckpointer largeCheckpointer;
 	private PendingDigests pendingDigests;
 	
-	private ScheduledExecutorService loopbackThreadPool;
+	private ScheduledExecutorService decisionThreadPool;
 
 	private static final boolean USE_GC_MAP = Config
 			.getGlobalBoolean(PC.USE_GC_MAP);
@@ -370,8 +370,9 @@ public class PaxosManager<NodeIDType> {
 					}
 				});
 		
-		loopbackThreadPool = Executors.newScheduledThreadPool(Config.getGlobalInt(PC.PACKET_DEMULTIPLEXER_THREADS),
-				new ThreadFactory() {
+		decisionThreadPool = Executors.newScheduledThreadPool
+				(Config.getGlobalInt(PC.PACKET_DEMULTIPLEXER_THREADS),
+						new ThreadFactory() {
 			@Override
 			public Thread newThread(Runnable r) {
 				Thread thread = Executors.defaultThreadFactory()
@@ -1102,7 +1103,23 @@ public class PaxosManager<NodeIDType> {
 								request.getSummary(PaxosConfig.log.isLoggable(level)) });
 				if ((pism != null)
 						&& (pism.getVersion() == request.getVersion()))
-					pism.handlePaxosMessage(request);
+				{
+					//pism.handlePaxosMessage(request);
+					PaxosPacket.PaxosPacketType msgType = request != null ? request.getType()
+							: PaxosPacket.PaxosPacketType.NO_TYPE;
+					// decisions are executed in a separate thread pool, becuase those call app.execute
+					// method, which could be slow.
+					if(msgType.equals(PaxosPacket.PaxosPacketType.DECISION))
+					{
+						this.decisionThreadPool.execute(new Runnable() 
+								{ public void run() { handlePaxosPacket((request)); }
+								});
+					}
+					else
+					{
+						pism.handlePaxosMessage(request);
+					}
+				}
 				else
 					// for recovering group created while crashed
 					this.findPaxosInstance(request);
@@ -1127,14 +1144,14 @@ public class PaxosManager<NodeIDType> {
 	
 	public static void printStackTrace(String stkTraceName)
 	{
-		/*System.out.println("\n"+stkTraceName+" stack trace starting. Thread name "
+		System.out.println("\n"+stkTraceName+" stack trace starting. Thread name "
 				+Thread.currentThread().getName());
 		StackTraceElement[] stackTraces = Thread.currentThread().getStackTrace();
 		for(int i=0; i<stackTraces.length; i++)
 		{
 			System.out.println("i="+i+" : "+stackTraces[i].toString());
 		}
-		System.out.println(stkTraceName+" stack trace finished\n");*/
+		System.out.println(stkTraceName+" stack trace finished\n");
 	}
 	
 	
@@ -1172,14 +1189,14 @@ public class PaxosManager<NodeIDType> {
 
 	// used (only) by RequestBatcher for already batched RequestPackets
 	protected void proposeBatched(RequestPacket requestPacket) {
-		//if (requestPacket != null)
-		//	this.handlePaxosPacket(requestPacket);
 		if (requestPacket != null)
-		{
-			this.loopbackThreadPool.execute(new Runnable() 
-			{ public void run() { handlePaxosPacket((requestPacket)); }
-			});
-		}
+			this.handlePaxosPacket(requestPacket);
+//		if (requestPacket != null)
+//		{
+//			this.loopbackThreadPool.execute(new Runnable() 
+//			{ public void run() { handlePaxosPacket((requestPacket)); }
+//			});
+//		}
 	}
 
 	/**
@@ -2057,23 +2074,21 @@ public class PaxosManager<NodeIDType> {
 					for (PaxosPacket packet : ((BatchedPaxosPacket) pp)
 							.getPaxosPackets())
 					{
-						this.loopbackThreadPool.execute(new Runnable() 
-										{ public void run() { handlePaxosPacket((packet)); }
-										});
-						//this.handlePaxosPacket((packet));
+//						this.loopbackThreadPool.execute(new Runnable() 
+//										{ public void run() { handlePaxosPacket((packet)); }
+//										});
+						this.handlePaxosPacket((packet));
 					}
 				}
 				else
 				{
-					//this.handlePaxosPacket((pp));
-					this.loopbackThreadPool.execute(new Runnable() { 
-						public void run() { handlePaxosPacket((pp)); }
-						});
+					this.handlePaxosPacket((pp));
+//					this.loopbackThreadPool.execute(new Runnable() { 
+//						public void run() { handlePaxosPacket((pp)); }
+//						});
 				}
 			}
 		}
-//		if (local != null && !local.isEmptyMessaging())
-//			this.messenger.send(local);
 		
 		this.messenger.send(MessagingTask.getNonLoopback(mtask, myID));
 	}
