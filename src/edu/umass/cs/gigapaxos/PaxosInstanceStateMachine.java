@@ -484,8 +484,6 @@ public class PaxosInstanceStateMachine implements Keyable<String>, Pausable {
 
 		MessagingTask mtask = null;
 		MessagingTask[] batchedTasks = null;
-		
-		PaxosManager.printStackTrace("PaxosInstance "+msgType.getLabel());
 
 		switch (msgType) {
 		case REQUEST:
@@ -570,6 +568,8 @@ public class PaxosInstanceStateMachine implements Keyable<String>, Pausable {
 			log.log(level, "{0} finished handlePaxosMessage{2}({1})",
 					new Object[] { this, pp.getSummary(log.isLoggable(level)),
 							log.isLoggable(level) ? pp.hashCode()+"":"" });
+		
+		PaxosManager.printStackTrace("PaxosInstance "+msgType.getLabel());
 	}
 
 	/************** Start of private methods ****************/

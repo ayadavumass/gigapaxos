@@ -1146,9 +1146,6 @@ public class PaxosManager<NodeIDType> {
 		boolean matched = false;
 		PaxosInstanceStateMachine pism = this.getInstance(paxosID);
 		if (pism != null) {
-			
-			printStackTrace("PaxosManager.propose");
-			
 			matched = true;
 			requestPacket.putPaxosID(paxosID, pism.getVersion());
 
@@ -1159,6 +1156,8 @@ public class PaxosManager<NodeIDType> {
 			this.outstanding.enqueue(new PaxosConfig.RequestAndCallback(requestPacket,
 					callback));
 			this.handleIncomingPacket(requestPacket);
+			
+			printStackTrace("PaxosManager.propose");
 		} else
 			PaxosConfig.log.log(Level.INFO,
 					"{0} could not find paxos instance {1} for request {2} with body {3}; "
