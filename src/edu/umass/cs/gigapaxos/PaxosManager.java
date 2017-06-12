@@ -378,7 +378,7 @@ public class PaxosManager<NodeIDType> {
 				Thread thread = Executors.defaultThreadFactory()
 						.newThread(r);
 				thread.setName(PaxosManager.class.getSimpleName()
-						+ myID+"loopbackThreadPool");
+						+ myID+"loopbackThreadPool"+thread.getId());
 				return thread;
 			}
 		});
