@@ -1195,14 +1195,14 @@ public class PaxosManager<NodeIDType> {
 
 	// used (only) by RequestBatcher for already batched RequestPackets
 	protected void proposeBatched(RequestPacket requestPacket) {
-//		if (requestPacket != null)
-//			this.handlePaxosPacket(requestPacket);
 		if (requestPacket != null)
-		{
-			this.loopbackThreadPool.execute(new Runnable() 
-			{ public void run() { handlePaxosPacket((requestPacket)); }
-			});
-		}
+			this.handlePaxosPacket(requestPacket);
+//		if (requestPacket != null)
+//		{
+//			this.loopbackThreadPool.execute(new Runnable() 
+//			{ public void run() { handlePaxosPacket((requestPacket)); }
+//			});
+//		}
 	}
 
 	/**
