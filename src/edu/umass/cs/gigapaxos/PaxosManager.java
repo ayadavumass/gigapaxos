@@ -146,7 +146,7 @@ public class PaxosManager<NodeIDType> {
 	private final LargeCheckpointer largeCheckpointer;
 	private PendingDigests pendingDigests;
 	
-	private ScheduledExecutorService loopbackThreadPool;
+	private ScheduledExecutorService decisionThreadPool;
 
 	private static final boolean USE_GC_MAP = Config
 			.getGlobalBoolean(PC.USE_GC_MAP);
@@ -370,7 +370,7 @@ public class PaxosManager<NodeIDType> {
 					}
 				});
 		
-		loopbackThreadPool = Executors.newScheduledThreadPool
+		decisionThreadPool = Executors.newScheduledThreadPool
 				(Config.getGlobalInt(PC.PACKET_DEMULTIPLEXER_THREADS),
 						new ThreadFactory() {
 			@Override
@@ -378,7 +378,7 @@ public class PaxosManager<NodeIDType> {
 				Thread thread = Executors.defaultThreadFactory()
 						.newThread(r);
 				thread.setName(PaxosManager.class.getSimpleName()
-						+ myID+"loopbackThreadPool"+thread.getId());
+						+ myID+"decisionThreadPool"+thread.getId());
 				return thread;
 			}
 		});
@@ -1104,8 +1104,8 @@ public class PaxosManager<NodeIDType> {
 				if ((pism != null)
 						&& (pism.getVersion() == request.getVersion()))
 				{
-					pism.handlePaxosMessage(request);
-					/*PaxosPacket.PaxosPacketType msgType = request != null ? request.getType()
+					//pism.handlePaxosMessage(request);
+					PaxosPacket.PaxosPacketType msgType = request != null ? request.getType()
 							: PaxosPacket.PaxosPacketType.NO_TYPE;
 					// decisions are executed in a separate thread pool, becuase those call app.execute
 					// method, which could be slow.
@@ -1124,7 +1124,7 @@ public class PaxosManager<NodeIDType> {
 					else
 					{
 						pism.handlePaxosMessage(request);
-					}*/
+					}
 				}
 				else
 					// for recovering group created while crashed
@@ -2080,18 +2080,18 @@ public class PaxosManager<NodeIDType> {
 					for (PaxosPacket packet : ((BatchedPaxosPacket) pp)
 							.getPaxosPackets())
 					{
-						this.loopbackThreadPool.execute(new Runnable() 
-										{ public void run() { handlePaxosPacket((packet)); }
-										});
-						//this.handlePaxosPacket((packet));
+						//this.loopbackThreadPool.execute(new Runnable() 
+						//				{ public void run() { handlePaxosPacket((packet)); }
+						//				});
+						this.handlePaxosPacket((packet));
 					}
 				}
 				else
 				{
-					//this.handlePaxosPacket((pp));
-					this.loopbackThreadPool.execute(new Runnable() { 
-						public void run() { handlePaxosPacket((pp)); }
-						});
+					this.handlePaxosPacket((pp));
+					//this.loopbackThreadPool.execute(new Runnable() { 
+					//	public void run() { handlePaxosPacket((pp)); }
+					//	});
 				}
 			}
 		}
