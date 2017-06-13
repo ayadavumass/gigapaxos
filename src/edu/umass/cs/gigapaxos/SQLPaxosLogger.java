@@ -1057,7 +1057,7 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 									Thread.MIN_PRIORITY);
 							TreeSet<Filename> candidates = SQLPaxosLogger.this.journaler
 									.getGCCandidates();
-							if(candidates != null)
+							if(candidates != null && !candidates.isEmpty())
 								SQLPaxosLogger.this.garbageCollectJournal(candidates);
 							
 						} catch (Exception | Error e) {
