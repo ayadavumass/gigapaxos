@@ -1075,7 +1075,8 @@ public class PaxosConfig {
 	 */
 	public static NodeConfig<String> getDefaultNodeConfig() {
 		final Map<String, InetSocketAddress> actives = PaxosConfig.getActives();
-
+		System.out.println("getDefaultNodeConfig.actives "+actives);
+		
 		// FIXME: don't use reconfiguration classes in gigapaxos
 		return new ReconfigurableNodeConfig<String>() {
 

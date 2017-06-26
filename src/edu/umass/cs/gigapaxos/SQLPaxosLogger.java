@@ -1055,9 +1055,11 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 						try {
 							Thread.currentThread().setPriority(
 									Thread.MIN_PRIORITY);
-							SQLPaxosLogger.this
-									.garbageCollectJournal(SQLPaxosLogger.this.journaler
-											.getGCCandidates());
+							TreeSet<Filename> candidates = SQLPaxosLogger.this.journaler
+									.getGCCandidates();
+							if(candidates != null && !candidates.isEmpty())
+								SQLPaxosLogger.this.garbageCollectJournal(candidates);
+							
 						} catch (Exception | Error e) {
 							log.severe(this
 									+ " incurred exception "

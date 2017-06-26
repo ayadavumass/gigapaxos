@@ -102,6 +102,7 @@ import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.utils.GCConcurrentHashMap;
 import edu.umass.cs.utils.GCConcurrentHashMapCallback;
+import edu.umass.cs.utils.ThroughputProfiler;
 import edu.umass.cs.utils.Util;
 
 /**
@@ -376,6 +377,14 @@ public class ActiveReplica<NodeIDType> implements ReconfiguratorCallback,
 		this.updateDemandStats(request, senderAndRequest.csa.getAddress());
 		instrumentNanoApp(isCoordinated ? Instrument.replicable
 				: Instrument.local, senderAndRequest.recvTime);
+		
+		if(Config.getGlobalBoolean(RC.ENABLE_INSTRUMENTATION))
+		{
+			if(isCoordinated)
+			{
+				ThroughputProfiler.recordOutgoingEvent("coordReqRate");
+			}
+		}
 
 		long t = System.nanoTime();
 		ClientRequest response = null;
@@ -463,8 +472,16 @@ public class ActiveReplica<NodeIDType> implements ReconfiguratorCallback,
 								incoming.getSummary(log.isLoggable(Level.FINE)) });
 				// long startTime = System.currentTimeMillis();
 				Request request = incoming;
+				
 				boolean isCoordinatedRequest = isCoordinated(request);
-
+				
+				if(Config.getGlobalBoolean(RC.ENABLE_INSTRUMENTATION))
+				{
+					if(isCoordinatedRequest)
+					{	
+						ThroughputProfiler.recordIncomingEvent("coordReqRate");
+					}
+				}
 				SenderAndRequest senderAndRequest = new SenderAndRequest(
 						request, header.sndr, header.rcvr,
 						// startTime
@@ -1164,7 +1181,7 @@ public class ActiveReplica<NodeIDType> implements ReconfiguratorCallback,
 			integers.add(type.getInt());
 		return integers;
 	}
-
+	
 	private static enum Instrument {
 		updateDemandStats(Integer.MAX_VALUE), restringification(100), getRequest(
 				100), local(100), replicable(100), getStats(1), handleIncoming(
@@ -1176,7 +1193,7 @@ public class ActiveReplica<NodeIDType> implements ReconfiguratorCallback,
 			this.val = val;
 		}
 	}
-
+	
 	private static final boolean ENABLE_INSTRUMENTATION = Config
 			.getGlobalBoolean(RC.ENABLE_INSTRUMENTATION);
 	private static final long MIN_INTER_DUMP_TIME = 2000;

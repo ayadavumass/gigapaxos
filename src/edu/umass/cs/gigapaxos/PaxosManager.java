@@ -154,7 +154,7 @@ public class PaxosManager<NodeIDType> {
 	 *  method would get called from AbstractPaxosLogger thread.
 	 */
 	private final ScheduledExecutorService appExecuteThreadPool;
-
+  
 	private static final boolean USE_GC_MAP = Config
 			.getGlobalBoolean(PC.USE_GC_MAP);
 
@@ -376,8 +376,7 @@ public class PaxosManager<NodeIDType> {
 						return thread;
 					}
 				});
-		
-		// TODO: aditya: Need to check if we can just increase the
+				// TODO: aditya: Need to check if we can just increase the
 		// number of threads in this.executor thread pool, instead
 		// of creating a separate appExecuteThreadPool.
 		appExecuteThreadPool = Executors.newScheduledThreadPool
@@ -1023,7 +1022,6 @@ public class PaxosManager<NodeIDType> {
 			}
 			return false;
 		}
-
 	}
 
 	private static final boolean BATCHING_ENABLED = Config
@@ -1161,7 +1159,20 @@ public class PaxosManager<NodeIDType> {
 		}
 		FD.receive((FailureDetectionPacket<NodeIDType>) request);
 	}
-
+	
+	public static void printStackTrace(String stkTraceName)
+	{
+		/*System.out.println("\n"+stkTraceName+" stack trace starting. Thread name "
+				+Thread.currentThread().getName());
+		StackTraceElement[] stackTraces = Thread.currentThread().getStackTrace();
+		for(int i=0; i<stackTraces.length; i++)
+		{
+			System.out.println("i="+i+" : "+stackTraces[i].toString());
+		}
+		System.out.println(stkTraceName+" stack trace finished\n");*/
+	}
+	
+	
 	private String propose(String paxosID, RequestPacket requestPacket,
 			ExecutedCallback callback) {
 		if (this.isClosed())
@@ -1179,6 +1190,8 @@ public class PaxosManager<NodeIDType> {
 			this.outstanding.enqueue(new PaxosConfig.RequestAndCallback(requestPacket,
 					callback));
 			this.handleIncomingPacket(requestPacket);
+			
+			printStackTrace("PaxosManager.propose");
 		} else
 			PaxosConfig.log.log(Level.INFO,
 					"{0} could not find paxos instance {1} for request {2} with body {3}; "
@@ -1196,6 +1209,12 @@ public class PaxosManager<NodeIDType> {
 	protected void proposeBatched(RequestPacket requestPacket) {
 		if (requestPacket != null)
 			this.handlePaxosPacket(requestPacket);
+//		if (requestPacket != null)
+//		{
+//			this.loopbackThreadPool.execute(new Runnable() 
+//			{ public void run() { handlePaxosPacket((requestPacket)); }
+//			});
+//		}
 	}
 
 	/**
@@ -2060,13 +2079,35 @@ public class PaxosManager<NodeIDType> {
 			IOException {
 		MessagingTask local = MessagingTask.getLoopback(mtask, myID);
 		if (local != null && !local.isEmptyMessaging())
+		{
 			for (PaxosPacket pp : local.msgs)
+			{
 				if (pp.getType() == PaxosPacketType.BATCHED_PAXOS_PACKET)
+				{
+					if(Util.oneIn(1000))
+					{
+						System.out.println("Local batching size "+((BatchedPaxosPacket) pp).getPaxosPackets().size());
+					}
+					
 					for (PaxosPacket packet : ((BatchedPaxosPacket) pp)
 							.getPaxosPackets())
+					{
+						//this.loopbackThreadPool.execute(new Runnable() 
+						//				{ public void run() { handlePaxosPacket((packet)); }
+						//				});
 						this.handlePaxosPacket((packet));
+					}
+				}
 				else
+				{
 					this.handlePaxosPacket((pp));
+					//this.loopbackThreadPool.execute(new Runnable() { 
+					//	public void run() { handlePaxosPacket((pp)); }
+					//	});
+				}
+			}
+		}
+		
 		this.messenger.send(MessagingTask.getNonLoopback(mtask, myID));
 	}
 

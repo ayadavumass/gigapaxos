@@ -37,6 +37,7 @@ import net.minidev.json.JSONValue;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import edu.umass.cs.gigapaxos.PaxosConfig;
 import edu.umass.cs.gigapaxos.PaxosConfig.PC;
 import edu.umass.cs.gigapaxos.paxospackets.PaxosPacket;
 import edu.umass.cs.gigapaxos.paxospackets.PaxosPacket.PaxosPacketType;
@@ -405,7 +406,7 @@ public class TESTPaxosClient {
 		}
 		return false;
 	}
-
+	
 	protected boolean sendRequest(int id, RequestPacket req)
 			throws IOException, JSONException {
 		InetAddress address = nc.getNodeAddress(id);
@@ -949,6 +950,10 @@ public class TESTPaxosClient {
 
 			TESTPaxosClient[] clients = TESTPaxosClient
 					.setupClients(TESTPaxosConfig.getFromPaxosConfig(true));
+			
+			System.out.println("Printing gigapaxosConfig "+PaxosConfig.getPropertiesFile()
+					+ " "+PaxosConfig.getActives());
+			
 			System.out.println(TESTPaxosConfig.getFromPaxosConfig(true));
 			int numReqs = Config.getGlobalInt(TC.NUM_REQUESTS);
 

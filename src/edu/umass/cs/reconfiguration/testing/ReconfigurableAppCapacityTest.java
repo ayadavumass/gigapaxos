@@ -1,6 +1,8 @@
 package edu.umass.cs.reconfiguration.testing;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -122,18 +124,21 @@ public class ReconfigurableAppCapacityTest extends DefaultTest {
 		for (int i = 0; i < NUM_CLIENTS; i++)
 			clients[i] = new RCClient();
 
-		boolean[] created = new boolean[NUM_GROUPS_CLIENT];
+		//boolean[] created = new boolean[NUM_GROUPS_CLIENT];
+		HashMap<String, Boolean> createdMap = new HashMap<String, Boolean>();
+		
 		// create names
 		for (int i = 0; i < NUM_GROUPS_CLIENT; i++) {
-			final int j = 0;
+			createdMap.put(names[i], false);
 			clients[0].sendRequest(
 					new CreateServiceName(names[i],
 							"somestate"), new RequestCallback() {
 						@Override
 						public void handleResponse(Request response) {
-							created[j] = true;
-							synchronized (created) {
-								created.notify();
+							synchronized (createdMap) 
+							{
+								createdMap.put(response.getServiceName(), true);
+								createdMap.notify();
 							}
 							assert (!((ClientReconfigurationPacket) response)
 									.isFailed() || ((ClientReconfigurationPacket) response)
@@ -143,11 +148,14 @@ public class ReconfigurableAppCapacityTest extends DefaultTest {
 						}
 					});
 		}
-		synchronized (created) {
-			for (int i = 0; i < created.length; i++) {
-				if (!created[i]) {
-					created.wait();
-					continue;
+		synchronized (createdMap) {
+			Iterator<String> nameIter = createdMap.keySet().iterator();
+			while(nameIter.hasNext())
+			{
+				String name = nameIter.next();
+				while (!createdMap.get(name)) 
+				{
+					createdMap.wait();
 				}
 			}
 			// all done
@@ -155,11 +163,11 @@ public class ReconfigurableAppCapacityTest extends DefaultTest {
 		System.out.println("Created " + NUM_GROUPS_CLIENT
 				+ " names with prefix " + TEST_GUID_PREFIX);
 	}
-
+	
 	private static String genRandomName() {
 		return TEST_GUID_PREFIX + (long) (Math.random() * Long.MAX_VALUE);
 	}
-
+	
 	/**
 	 * Verifies a single write is successful.
 	 * 
@@ -169,11 +177,11 @@ public class ReconfigurableAppCapacityTest extends DefaultTest {
 	public void test_01_SingleWrite() throws IOException {
 		this.blockingRead(names[0], clients[0]);
 	}
-
+	
 	private void blockingRead(String name, RCClient client) throws IOException {
 		this.blockingRead(name, client, true);
 	}
-
+	
 	private void blockingRead(String name, RCClient client, boolean block)
 			throws IOException {
 		Runnable task = (new Runnable() {
@@ -208,7 +216,7 @@ public class ReconfigurableAppCapacityTest extends DefaultTest {
 		else
 			executor.submit(task);
 	}
-
+	
 	/**
 	 * @throws Exception
 	 */
@@ -245,8 +253,10 @@ public class ReconfigurableAppCapacityTest extends DefaultTest {
 			int numReads = Config.getGlobalInt(TC.NUM_REQUESTS);
 			reset();
 			long t = System.currentTimeMillis();
+			
 			for (int i = 0; i < numReads; i++) {
-				blockingRead(names[0], clients[numReads % NUM_CLIENTS], false);
+				blockingRead(names[i%names.length], 
+							clients[i % clients.length], false);
 			}
 			int j = 1;
 			System.out.print("[total_reads=" + numReads + ": ");
@@ -263,7 +273,7 @@ public class ReconfigurableAppCapacityTest extends DefaultTest {
 					+ "K/s");
 		}
 	}
-
+	 
 	/**
 	 * Removes all account and sub-guids created during the test.
 	 * 

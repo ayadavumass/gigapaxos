@@ -953,10 +953,10 @@ public class TESTPaxosClient {
 			Config.register(args);
 			initStaticParams();
 			TESTPaxosConfig.setConsoleHandler(Level.WARNING);
-
+			
 			TESTPaxosClient[] clients = TESTPaxosClient
 					.setupClients(TESTPaxosConfig.getFromPaxosConfig(true));
-			System.out.println(TESTPaxosConfig.getFromPaxosConfig(true));
+			System.out.println("NodeConfig "+TESTPaxosConfig.getFromPaxosConfig(true));
 			int numReqs = Config.getGlobalInt(TC.NUM_REQUESTS);
 
 			// begin warmup run

@@ -430,6 +430,8 @@ public class PaxosInstanceStateMachine implements Keyable<String>, Pausable {
 								: msgType,
 						mode != SyncMode.DEFAULT_SYNC ? mode : "",
 						pp!=null && log.isLoggable(level)? pp.hashCode()+"":"" });
+		
+		
 
 		if (pp != null && pp.getVersion() != this.getVersion()) {
 			log.log(Level.INFO,
@@ -566,6 +568,8 @@ public class PaxosInstanceStateMachine implements Keyable<String>, Pausable {
 			log.log(level, "{0} finished handlePaxosMessage{2}({1})",
 					new Object[] { this, pp.getSummary(log.isLoggable(level)),
 							log.isLoggable(level) ? pp.hashCode()+"":"" });
+		
+		PaxosManager.printStackTrace("PaxosInstance "+msgType.getLabel());
 	}
 
 	/************** Start of private methods ****************/
