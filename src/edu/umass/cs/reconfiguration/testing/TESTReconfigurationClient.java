@@ -55,7 +55,7 @@ import edu.umass.cs.utils.Util;
  *         creation, deletion, request actives, and app requests to names.
  */
 @FixMethodOrder(org.junit.runners.MethodSorters.NAME_ASCENDING)
-public class TESTReconfigurationClient extends DefaultTest {
+public class TESTReconfigurationClient extends DefaultTest implements testBasic {
 
 	private static final Logger log = ReconfigurationConfig.getLogger();
 	private static final int REPEAT = 10;
@@ -673,7 +673,7 @@ public class TESTReconfigurationClient extends DefaultTest {
 	 * @throws NumberFormatException
 	 * @throws InterruptedException
 	 */
-	@Test(timeout = DEFAULT_TIMEOUT + DEFAULT_APP_REQUEST_TIMEOUT)
+	// @Test(timeout = DEFAULT_TIMEOUT + DEFAULT_APP_REQUEST_TIMEOUT)
 	public void test00_RandomNameAppRequestFails() throws IOException,
 			NumberFormatException, InterruptedException {
 		boolean test = testAppRequests(generateRandomNames(1), 1, false);
@@ -687,7 +687,7 @@ public class TESTReconfigurationClient extends DefaultTest {
 	 * @throws NumberFormatException
 	 * @throws InterruptedException
 	 */
-	@Test(timeout = DEFAULT_TIMEOUT)
+	// @Test(timeout = DEFAULT_TIMEOUT)
 	public void test00_RandomNameNotExists() throws IOException,
 			NumberFormatException, InterruptedException {
 		boolean test = testNotExists(generateRandomNames(10));
@@ -697,7 +697,7 @@ public class TESTReconfigurationClient extends DefaultTest {
 	/**
 	 * @throws IOException
 	 */
-	@Test(timeout = DEFAULT_TIMEOUT)
+	// @Test(timeout = DEFAULT_TIMEOUT)
 	public void test00_RequestRandomActive() throws IOException {
 		boolean test = testExists(Config.getGlobalString(RC.SPECIAL_NAME), true);
 		Assert.assertEquals(test, true); // should pass
@@ -707,7 +707,7 @@ public class TESTReconfigurationClient extends DefaultTest {
 	/**
 	 * @throws IOException
 	 */
-	@Test(timeout = DEFAULT_APP_REQUEST_TIMEOUT)
+	// @Test(timeout = DEFAULT_APP_REQUEST_TIMEOUT)
 	public void test00_AnycastRequest() throws IOException {
 		boolean test = testAppRequest(generateRandomName(), null,
 				DEFAULT_TIMEOUT);
@@ -722,7 +722,7 @@ public class TESTReconfigurationClient extends DefaultTest {
 	 * @throws NumberFormatException
 	 * @throws InterruptedException
 	 */
-	@Test(timeout = 4 * DEFAULT_TIMEOUT)
+	// @Test(timeout = 4 * DEFAULT_TIMEOUT)
 	public void test00_CreateExistsDelete() throws IOException,
 			NumberFormatException, InterruptedException {
 		String[] names = generateRandomNames(1);
@@ -739,7 +739,7 @@ public class TESTReconfigurationClient extends DefaultTest {
 	 * @throws NumberFormatException
 	 * @throws InterruptedException
 	 */
-	@Test(timeout = DEFAULT_TIMEOUT + DEFAULT_RTX_TIMEOUT)
+	// @Test(timeout = DEFAULT_TIMEOUT + DEFAULT_RTX_TIMEOUT)
 	public void test00_RandomNameDeleteFails() throws IOException,
 			NumberFormatException, InterruptedException {
 		boolean test = testDelete(generateRandomName(), DEFAULT_TIMEOUT);
@@ -756,7 +756,7 @@ public class TESTReconfigurationClient extends DefaultTest {
 	 * @throws InterruptedException
 	 * @throws NumberFormatException
 	 */
-	@Test
+	// @Test
 	public void test01_BasicSequence() throws IOException,
 			NumberFormatException, InterruptedException {
 		String[] names = generateRandomNames(Config
@@ -765,8 +765,8 @@ public class TESTReconfigurationClient extends DefaultTest {
 		boolean test = testNotExists(names)
 				&& testCreates(names)
 				&& testExists(names)
-				&& testAppRequests(names,
-						Config.getGlobalInt(TRC.TEST_NUM_REQUESTS_PER_NAME))
+				//&& testAppRequests(names,
+				//		Config.getGlobalInt(TRC.TEST_NUM_REQUESTS_PER_NAME))
 				&& testDeletes(names) && testNotExists(names);
 		log.log(Level.INFO,
 				"{0} {1}",
@@ -786,7 +786,7 @@ public class TESTReconfigurationClient extends DefaultTest {
 	 * @throws NumberFormatException
 	 * @throws InterruptedException
 	 */
-	@Test
+	// @Test
 	public void test02_ReplicableClientRequest() throws IOException,
 			NumberFormatException, InterruptedException {
 		String[] names = generateRandomNames(Config
@@ -818,7 +818,7 @@ public class TESTReconfigurationClient extends DefaultTest {
 	 * @throws IOException
 	 * @throws InterruptedException
 	 */
-	@Test
+	// @Test
 	public void test02_NonDefaultRequest() throws NumberFormatException,
 			IOException, InterruptedException {
 		String[] names = generateRandomNames(1);
@@ -837,8 +837,8 @@ public class TESTReconfigurationClient extends DefaultTest {
 	 * @throws NumberFormatException
 	 * @throws InterruptedException
 	 */
-	@Test
-	@Repeat(times = REPEAT)
+	// @Test
+	// @Repeat(times = REPEAT)
 	public void test02_MutualAuthRequest() throws IOException,
 			NumberFormatException, InterruptedException {
 		String name = generateRandomName();
@@ -896,16 +896,23 @@ public class TESTReconfigurationClient extends DefaultTest {
 		// test batched creates
 		String[] bNames = generateRandomNames(Config
 				.getGlobalInt(TRC.TEST_NUM_APP_NAMES));
-		boolean test = testNotExists(bNames)
-				&& testBatchCreate(bNames,
-						Config.getGlobalInt(TRC.TEST_BATCH_SIZE))
-				&& (testExists(bNames))
-				&& testAppRequests(bNames,
-						Config.getGlobalInt(TRC.TEST_NUM_REQUESTS_PER_NAME))
-				&& testDeletes(bNames) && testNotExists(bNames);
+		
+		boolean test1 = testNotExists(bNames);
+		long s0 = System.currentTimeMillis();
+		boolean test2 = testBatchCreate(bNames, Config.getGlobalInt(TRC.TEST_BATCH_SIZE));
+		long e0 = System.currentTimeMillis();
+		System.out.println("Time taken for batch name creation " + (e0-s0));
+		
+		boolean test3 = testExists(bNames);
+		boolean test4 = testAppRequests(bNames, Config.getGlobalInt(TRC.TEST_NUM_REQUESTS_PER_NAME));
+		s0 = System.currentTimeMillis();
+		boolean test5 = testDeletes(bNames) && testNotExists(bNames);
+		e0 = System.currentTimeMillis();
+		System.out.println("Time taken for batch name deletion " + (e0-s0));
+		
 		log.log(Level.INFO, "{0}: {1}", new Object[] {
 				testName.getMethodName(), DelayProfiler.getStats() });
-		Assert.assertEquals(test, true);
+		Assert.assertEquals(test1 && test2 && test3 && test4 && test5, true);
 		;
 	}
 
@@ -913,7 +920,7 @@ public class TESTReconfigurationClient extends DefaultTest {
 	 * @throws IOException
 	 * @throws InterruptedException
 	 */
-	@Test
+	// @Test
 	public void test04_ReconfigurationRate() throws IOException,
 			InterruptedException {
 		DelayProfiler.clear();
@@ -957,7 +964,7 @@ public class TESTReconfigurationClient extends DefaultTest {
 	 * @throws IOException
 	 * @throws InterruptedException
 	 */
-	@Test(timeout = DEFAULT_TIMEOUT)
+	// @Test(timeout = DEFAULT_TIMEOUT)
 	public void test20_RandomActiveReplicaDelete() throws IOException,
 			InterruptedException {
 		String name = null;
@@ -980,7 +987,7 @@ public class TESTReconfigurationClient extends DefaultTest {
 	 * @throws IOException
 	 * @throws InterruptedException
 	 */
-	@Test
+	// @Test
 	public void test20_RandomActiveReplicaDeleteAfterAdd() throws IOException,
 			InterruptedException {
 		Map<String, InetSocketAddress> adds = new HashMap<String, InetSocketAddress>();
@@ -999,7 +1006,7 @@ public class TESTReconfigurationClient extends DefaultTest {
 	 * @throws InterruptedException
 	 * 
 	 */
-	@Test
+	// @Test
 	public void test21_DeleteActiveReplica() throws IOException,
 			InterruptedException {
 		String[] names = null;
@@ -1025,7 +1032,7 @@ public class TESTReconfigurationClient extends DefaultTest {
 	 * @throws InterruptedException
 	 * 
 	 */
-	@Test
+	// @Test
 	public void test22_AddActiveReplica() throws IOException,
 			InterruptedException {
 		Map<String, InetSocketAddress> newlyAddedActives = new HashMap<String, InetSocketAddress>();
@@ -1048,7 +1055,7 @@ public class TESTReconfigurationClient extends DefaultTest {
 	/**
 	 * @throws IOException
 	 */
-	@Test
+	// @Test
 	public void test31_AddReconfigurator() throws IOException {
 		boolean test = testCreates(generateRandomNames(Config
 				.getGlobalInt(TRC.TEST_NUM_APP_NAMES)));
@@ -1074,7 +1081,7 @@ public class TESTReconfigurationClient extends DefaultTest {
 	 * @throws IOException
 	 * 
 	 */
-	@Test
+	// @Test
 	public void test32_DeleteReconfigurator() throws IOException {
 		if (!justAddedRCs.isEmpty()) {
 			boolean test = this.testReconfigureReconfigurators(null,

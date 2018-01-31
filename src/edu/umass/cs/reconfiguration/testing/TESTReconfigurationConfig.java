@@ -60,12 +60,12 @@ public class TESTReconfigurationConfig {
 		/**
 		 * 
 		 */
-		NUM_RECONFIGURATORS(5),
+		NUM_RECONFIGURATORS(1),
 
 		/**
 		 * 
 		 */
-		NUM_ACTIVES(8),
+		NUM_ACTIVES(1),
 
 		/**
 		 * 
@@ -105,7 +105,7 @@ public class TESTReconfigurationConfig {
 		/**
 		 * 
 		 */
-		TEST_NUM_APP_NAMES(1),
+		TEST_NUM_APP_NAMES(1000),
 
 		/**
 		 * 
