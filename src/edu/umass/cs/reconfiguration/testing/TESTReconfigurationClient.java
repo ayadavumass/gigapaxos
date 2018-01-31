@@ -55,8 +55,8 @@ import edu.umass.cs.utils.Util;
  *         creation, deletion, request actives, and app requests to names.
  */
 @FixMethodOrder(org.junit.runners.MethodSorters.NAME_ASCENDING)
-public class TESTReconfigurationClient extends DefaultTest implements testBasic {
-
+public class TESTReconfigurationClient extends DefaultTest
+{
 	private static final Logger log = ReconfigurationConfig.getLogger();
 	private static final int REPEAT = 10;
 
